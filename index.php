@@ -2,7 +2,7 @@
 
 require './utils/typograf.php';
 
-echo 'Hello, world!';
+echo 'This page is for parsing mos.ru data. Use <a href="./api/v1/">/api/v1/</a> for API';
 
 $ini = parse_ini_file('app.ini', true);
 
