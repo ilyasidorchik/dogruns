@@ -1,0 +1,7 @@
+# Passwords
+app.ini
+.htpasswd
+
+# PhpStorm
+.idea/
+.DS_Store
