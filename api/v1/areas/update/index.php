@@ -34,7 +34,8 @@ if (isset($area_id)) {
                     'success' => true,
                     'result' => [
                         'id' => $area_id,
-                        'name' => $new_name
+                        'old_name' => $old_name,
+                        'new_name' => $new_name
                     ]
                 ]);
             } else {
