@@ -18,17 +18,17 @@ if (isset($area_id)) {
     header('Content-type: application/json');
 
     if ($api_key == $ini[api][key]) {
-        $result = mysqli_query($link, "SELECT `name` FROM areas WHERE id = '$area_id'");
+        $result = mysqli_query($link, "SELECT `name` FROM `areas` WHERE `id` = '$area_id'");
         $row = mysqli_fetch_assoc($result);
         $old_name = $row['name'];
 
         if (isset($old_name)) {
-            $result = mysqli_query($link, "SELECT `id` FROM areas WHERE name = '$new_name'");
+            $result = mysqli_query($link, "SELECT `id` FROM `areas` WHERE `name` = '$new_name'");
             $row = mysqli_fetch_assoc($result);
             $other_id = $row['id'];
 
             if (empty($other_id)) {
-                mysqli_query($link, "UPDATE `areas` SET `name` = '$new_name' WHERE id = '$area_id'");
+                mysqli_query($link, "UPDATE `areas` SET `name` = '$new_name' WHERE `id` = '$area_id'");
 
                 array_push($content, [
                     'success' => true,

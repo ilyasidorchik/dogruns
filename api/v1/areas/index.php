@@ -12,7 +12,7 @@ $content = [];
 $area_id = htmlspecialchars($_GET['id']);
 
 if ($area_id != '') {
-    $result = mysqli_query($link, "SELECT `name` FROM areas WHERE id = '$area_id'");
+    $result = mysqli_query($link, "SELECT `name` FROM `areas` WHERE `id` = '$area_id'");
     $row = mysqli_fetch_assoc($result);
     $name = $row['name'];
 
@@ -28,7 +28,7 @@ if ($area_id != '') {
         ]);
     }
 } else {
-    $result = mysqli_query($link, "SELECT * FROM areas");
+    $result = mysqli_query($link, "SELECT * FROM `areas`");
 
     while ($row = mysqli_fetch_assoc($result)) {
         $area_id = $row['id'];
@@ -41,11 +41,7 @@ if ($area_id != '') {
     }
 }
 
-
-
 if ($content) {
     $json_str = json_encode($content, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_NUMERIC_CHECK);
     echo $json_str;
 }
-
-//    mysqli_query($link, "INSERT INTO `playgrounds` (`id`, `address`, `latitude`, `longitude`, `size`, `is_illuminated`, `is_fenced`, `district_id`) VALUES ('NULL', '$address', '$latitude', '$longitude', '$size', '$is_illuminated', '$is_fenced', '0')");

@@ -17,14 +17,14 @@ if (isset($name)) {
     header('Content-type: application/json');
 
     if ($apiKey == $ini[api][key]) {
-        $result = mysqli_query($link, "SELECT `id` FROM areas WHERE name = '$name'");
+        $result = mysqli_query($link, "SELECT `id` FROM `areas` WHERE `name` = '$name'");
         $row = mysqli_fetch_assoc($result);
         $area_id = $row['id'];
 
         if (empty($area_id)) {
             mysqli_query($link, "INSERT INTO `areas` (`id`, `name`) VALUES ('NULL', '$name')");
 
-            $result = mysqli_query($link, "SELECT `id` FROM areas WHERE name = '$name'");
+            $result = mysqli_query($link, "SELECT `id` FROM `areas` WHERE `name` = '$name'");
             $row = mysqli_fetch_assoc($result);
             $area_id = $row['id'];
 

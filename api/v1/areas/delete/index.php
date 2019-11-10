@@ -14,12 +14,12 @@ if (isset($area_id)) {
     header('Content-type: application/json');
 
     if ($apiKey == $ini[api][key]) {
-        $result = mysqli_query($link, "SELECT `name` FROM areas WHERE id = '$area_id'");
+        $result = mysqli_query($link, "SELECT `name` FROM `areas` WHERE `id` = '$area_id'");
         $row = mysqli_fetch_assoc($result);
         $name = $row['name'];
 
         if (isset($name)) {
-            mysqli_query($link, "DELETE FROM `areas` WHERE id = '$area_id'");
+            mysqli_query($link, "DELETE FROM `areas` WHERE `id` = '$area_id'");
 
             array_push($content, [
                 'success' => true,
