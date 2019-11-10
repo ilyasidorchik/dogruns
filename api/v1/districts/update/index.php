@@ -34,7 +34,8 @@ if (isset($district_id)) {
                     'success' => true,
                     'result' => [
                         'id' => $district_id,
-                        'name' => $new_name
+                        'old_name' => $old_name,
+                        'new_name' => $new_name
                     ]
                 ]);
             } else {
