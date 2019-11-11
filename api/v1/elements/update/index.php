@@ -32,10 +32,14 @@ if (isset($element_id)) {
 
                 array_push($content, [
                     'success' => true,
+                    'id' => $element_id,
                     'result' => [
-                        'id' => $element_id,
-                        'old_name' => $old_name,
-                        'new_name' => $new_name
+                        'old' => [
+                            'name' => $old_name
+                        ],
+                        'new' => [
+                            'name' => $new_name
+                        ]
                     ]
                 ]);
             } else {
