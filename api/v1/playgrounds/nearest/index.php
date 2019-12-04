@@ -15,6 +15,7 @@ $inputJSON = file_get_contents('php://input');
 $input = json_decode($inputJSON, true);
 $address = $input[0]['address'];
 $address_googled = 'Россия, Москва, ' . $address;
+$address_googled = urlencode($address_googled);
 
 $min = 100000000000;
 $closest_playground_id = '';
@@ -36,7 +37,8 @@ $lon_to = 0;
 $lat_delta = 0;
 $lon_delta = 0;
 $angle = 0;
-$distance = 0;
+$i = 0;
+
 
 while ($row = mysqli_fetch_assoc($result)) {
     $content_geocoder = file_get_contents("https://maps.googleapis.com/maps/api/distancematrix/json?key=$MAP_API_KEY&origins=$address_googled&destinations=$row[latitude],$row[longitude]&travelMode=WALKING");
@@ -44,7 +46,7 @@ while ($row = mysqli_fetch_assoc($result)) {
     $duration = $json_geocoder["rows"][0]["elements"][0]["duration"]["value"];
 
     if ($duration < $min) {
-        $min = $distance;
+        $min = $duration;
 
         $closest_playground_id = $row['id'];
         $closest_address = $row['address'];
