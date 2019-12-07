@@ -10,6 +10,7 @@ mysqli_set_charset($link, 'utf8');
 $MAP_API_KEY = $ini[api][map_key];
 
 $content = [];
+$content_result = [];
 
 $inputJSON = file_get_contents('php://input');
 $input = json_decode($inputJSON, true);
@@ -21,7 +22,6 @@ $json_geocoder = json_decode($content_geocoder, true);
 $latitudeFrom = $json_geocoder["results"][0]["geometry"]["location"]["lat"];
 $longitudeFrom = $json_geocoder["results"][0]["geometry"]["location"]["lng"];
 
-$min = 100000000000;
 $closest_playground_id = '';
 $closest_address = '';
 $closest_latitude = '';
@@ -53,38 +53,32 @@ while ($row = mysqli_fetch_assoc($result)) {
     $angle = 2 * asin(sqrt(pow(sin($lat_delta / 2), 2) + cos($lat_from) * cos($lat_to) * pow(sin($lon_delta / 2), 2)));
     $distance = $angle * 6371000;
 
-    if ($distance < $min) {
-        $min = $distance;
+    $closest_playground_id = $row['id'];
+    $closest_address = $row['address'];
+    $closest_latitude = $row['latitude'];
+    $closest_longitude = $row['longitude'];
+    $closest_size = $row['size'];
+    $closest_is_illuminated = $row['is_illuminated'];
+    $closest_is_fenced = $row['is_fenced'];
+    $closest_district_id = $row['district_id'];
 
-        $closest_playground_id = $row['id'];
-        $closest_address = $row['address'];
-        $closest_latitude = $row['latitude'];
-        $closest_longitude = $row['longitude'];
-        $closest_size = $row['size'];
-        $closest_is_illuminated = $row['is_illuminated'];
-        $closest_is_fenced = $row['is_fenced'];
-        $closest_district_id = $row['district_id'];
+    $select_elements_id = mysqli_query($link, "SELECT `element_id` FROM `playground_elements` WHERE `playground_id` = '$closest_playground_id'");
+    $elements = [];
+
+    while ($row_of_select_elements_id = mysqli_fetch_assoc($select_elements_id)) {
+        $element_id = $row_of_select_elements_id['element_id'];
+
+        $select_elements_name = mysqli_query($link, "SELECT `name` FROM `elements` WHERE `id` = '$element_id'");
+        $row_of_select_elements_name = mysqli_fetch_assoc($select_elements_name);
+        $element_name = $row_of_select_elements_name['name'];
+
+        array_push($elements, [
+            'element_id' => $element_id,
+            'element_name' => $element_name
+        ]);
     }
-}
 
-$select_elements_id = mysqli_query($link, "SELECT `element_id` FROM `playground_elements` WHERE `playground_id` = '$closest_playground_id'");
-$elements = [];
-
-while ($row_of_select_elements_id = mysqli_fetch_assoc($select_elements_id)) {
-    $element_id = $row_of_select_elements_id['element_id'];
-
-    $select_elements_name = mysqli_query($link, "SELECT `name` FROM `elements` WHERE `id` = '$element_id'");
-    $row_of_select_elements_name = mysqli_fetch_assoc($select_elements_name);
-    $element_name = $row_of_select_elements_name['name'];
-
-    array_push($elements, [
-        'element_id' => $element_id,
-        'element_name' => $element_name
-    ]);
-}
-
-array_push($content, [
-    'result' => [
+    array_push($content_result, [
         'id' => $closest_playground_id,
         'address' => $closest_address,
         'latitude' => $closest_latitude,
@@ -93,8 +87,21 @@ array_push($content, [
         'is_illuminated' => $closest_is_illuminated,
         'is_fenced' => $closest_is_fenced,
         'district_id' => $closest_district_id,
-        'elements' => $elements
-    ],
+        'elements' => $elements,
+        'distance' => $distance
+    ]);
+}
+
+function cmp_function($a, $b) {
+    return ($a['distance'] > $b['distance']);
+}
+
+uasort($content_result, 'cmp_function');
+
+$content_result = array_slice($content_result, 0, 5);
+
+array_push($content, [
+    'result' => $content_result,
     'status' => 'OK'
 ]);
 
