@@ -68,14 +68,17 @@ while ($row = mysqli_fetch_assoc($result)) {
 }
 
 array_push($content, [
-    'id' => $closest_playground_id,
-    'address' => $closest_address,
-    'latitude' => $closest_latitude,
-    'longitude' => $closest_longitude,
-    'size' => $closest_size,
-    'is_illuminated' => $closest_is_illuminated,
-    'is_fenced' => $closest_is_fenced,
-    'district_id' => $closest_district_id,
+    'result' => [
+        'id' => $closest_playground_id,
+        'address' => $closest_address,
+        'latitude' => $closest_latitude,
+        'longitude' => $closest_longitude,
+        'size' => $closest_size,
+        'is_illuminated' => $closest_is_illuminated,
+        'is_fenced' => $closest_is_fenced,
+        'district_id' => $closest_district_id
+    ],
+    'status' => 'OK'
 ]);
 
 if ($content) {
