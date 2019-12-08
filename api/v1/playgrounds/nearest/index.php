@@ -31,6 +31,8 @@ if ($address) {
     $longitudeFrom = $input[0]['longitude'];
 }
 
+$elements = $input[0]['elements'];
+
 
 $closest_playground_id = '';
 $closest_address = '';
@@ -53,6 +55,42 @@ $angle = 0;
 $distance = 0;
 
 while ($row = mysqli_fetch_assoc($result)) {
+    $closest_playground_id = $row['id'];
+
+    $select_playground_elements_id = mysqli_query($link, "SELECT `element_id` FROM `playground_elements` WHERE `playground_id` = '$closest_playground_id'");
+    $closest_elements = [];
+
+    while ($row_of_select_playground_elements_id = mysqli_fetch_assoc($select_playground_elements_id)) {
+        $element_id = $row_of_select_playground_elements_id['element_id'];
+
+        $select_elements_name = mysqli_query($link, "SELECT `name` FROM `elements` WHERE `id` = '$element_id'");
+        $row_of_select_elements_name = mysqli_fetch_assoc($select_elements_name);
+        $element_name = $row_of_select_elements_name['name'];
+
+        array_push($closest_elements, [
+            'element_id' => $element_id,
+            'element_name' => $element_name
+        ]);
+    }
+
+
+    if ($elements) {
+        foreach ($elements as &$element) {
+            $element_name = $element['element_name'];
+
+            $select_elements_id = mysqli_query($link, "SELECT `id` FROM `elements` WHERE `name` = '$element_name'");
+            $row_of_select_elements_id = mysqli_fetch_assoc($select_elements_id);
+            $element_id = $row_of_select_elements_id['id'];
+
+            if (!in_array( [
+                'element_id' => $element_id,
+                'element_name' => $element_name
+            ], $closest_elements))
+                goto next;
+        }
+    }
+
+
     // Haversine formula
     $lat_from = deg2rad($latitudeFrom);
     $lon_from = deg2rad($longitudeFrom);
@@ -63,7 +101,6 @@ while ($row = mysqli_fetch_assoc($result)) {
     $angle = 2 * asin(sqrt(pow(sin($lat_delta / 2), 2) + cos($lat_from) * cos($lat_to) * pow(sin($lon_delta / 2), 2)));
     $distance = $angle * 6371000;
 
-    $closest_playground_id = $row['id'];
     $closest_address = $row['address'];
     $closest_latitude = $row['latitude'];
     $closest_longitude = $row['longitude'];
@@ -71,22 +108,6 @@ while ($row = mysqli_fetch_assoc($result)) {
     $closest_is_illuminated = $row['is_illuminated'];
     $closest_is_fenced = $row['is_fenced'];
     $closest_district_id = $row['district_id'];
-
-    $select_elements_id = mysqli_query($link, "SELECT `element_id` FROM `playground_elements` WHERE `playground_id` = '$closest_playground_id'");
-    $elements = [];
-
-    while ($row_of_select_elements_id = mysqli_fetch_assoc($select_elements_id)) {
-        $element_id = $row_of_select_elements_id['element_id'];
-
-        $select_elements_name = mysqli_query($link, "SELECT `name` FROM `elements` WHERE `id` = '$element_id'");
-        $row_of_select_elements_name = mysqli_fetch_assoc($select_elements_name);
-        $element_name = $row_of_select_elements_name['name'];
-
-        array_push($elements, [
-            'element_id' => $element_id,
-            'element_name' => $element_name
-        ]);
-    }
 
     array_push($content_result, [
         'id' => $closest_playground_id,
@@ -97,9 +118,11 @@ while ($row = mysqli_fetch_assoc($result)) {
         'is_illuminated' => $closest_is_illuminated,
         'is_fenced' => $closest_is_fenced,
         'district_id' => $closest_district_id,
-        'elements' => $elements,
+        'elements' => $closest_elements,
         'distance' => $distance
     ]);
+
+    next:
 }
 
 function cmp_function($a, $b) {
