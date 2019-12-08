@@ -33,6 +33,7 @@ if ($address) {
 
 $elements = $input[0]['elements'];
 $is_illuminated = $input[0]['is_illuminated'];
+$is_fenced = $input[0]['is_fenced'];
 
 
 $closest_playground_id = '';
@@ -111,6 +112,8 @@ while ($row = mysqli_fetch_assoc($result)) {
     if (isset($is_illuminated) && $closest_is_illuminated != $is_illuminated) goto next;
 
     $closest_is_fenced = $row['is_fenced'];
+    if (isset($is_fenced) && $closest_is_fenced != $is_fenced) goto next;
+
     $closest_district_id = $row['district_id'];
 
     array_push($content_result, [
