@@ -11,16 +11,26 @@ $MAP_API_KEY = $ini[api][map_key];
 
 $content = [];
 $content_result = [];
+$latitudeFrom = '';
+$longitudeFrom = '';
 
 $inputJSON = file_get_contents('php://input');
 $input = json_decode($inputJSON, true);
+
 $address = $input[0]['address'];
-$address_googled = 'Россия, Москва, ' . $address;
-$address_googled = urlencode($address_googled);
-$content_geocoder = file_get_contents("https://maps.googleapis.com/maps/api/geocode/json?key=$MAP_API_KEY&address=$address_googled");
-$json_geocoder = json_decode($content_geocoder, true);
-$latitudeFrom = $json_geocoder["results"][0]["geometry"]["location"]["lat"];
-$longitudeFrom = $json_geocoder["results"][0]["geometry"]["location"]["lng"];
+
+if ($address) {
+    $address_googled = 'Россия, Москва, ' . $address;
+    $address_googled = urlencode($address_googled);
+    $content_geocoder = file_get_contents("https://maps.googleapis.com/maps/api/geocode/json?key=$MAP_API_KEY&address=$address_googled");
+    $json_geocoder = json_decode($content_geocoder, true);
+    $latitudeFrom = $json_geocoder["results"][0]["geometry"]["location"]["lat"];
+    $longitudeFrom = $json_geocoder["results"][0]["geometry"]["location"]["lng"];
+} else {
+    $latitudeFrom = $input[0]['latitude'];
+    $longitudeFrom = $input[0]['longitude'];
+}
+
 
 $closest_playground_id = '';
 $closest_address = '';
