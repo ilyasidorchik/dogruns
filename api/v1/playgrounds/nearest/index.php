@@ -32,6 +32,7 @@ if ($address) {
 }
 
 $elements = $input[0]['elements'];
+$size = $input[0]['size'];
 $is_illuminated = $input[0]['is_illuminated'];
 $is_fenced = $input[0]['is_fenced'];
 
@@ -106,7 +107,9 @@ while ($row = mysqli_fetch_assoc($result)) {
     $closest_address = $row['address'];
     $closest_latitude = $row['latitude'];
     $closest_longitude = $row['longitude'];
+
     $closest_size = $row['size'];
+    if (isset($size) && $closest_size != $size) goto next;
 
     $closest_is_illuminated = $row['is_illuminated'];
     if (isset($is_illuminated) && $closest_is_illuminated != $is_illuminated) goto next;
