@@ -28,16 +28,18 @@ if ($playground_element_id != '') {
             'element_id' => $element_id
         ]);
     } else {
-        array_push($content_result, [
-            'id' => $playground_element_id,
-            'error' => 'Не найден'
-        ]);
+        $content_key_result = 'error';
+        $content_result = 'Не найдено';
+        $content_status = 'Not Found';
+
+        goto output;
     }
 
     goto output;
 }
 
-if (isset($input_playground_id)) {
+
+if ($input_playground_id != '') {
     $result = mysqli_query($link, "SELECT * FROM `playground_elements` WHERE `playground_id` = '$input_playground_id'");
 
     if (!$row = mysqli_fetch_assoc($result)) {
@@ -61,6 +63,7 @@ if (isset($input_playground_id)) {
     goto output;
 }
 
+
 $result = mysqli_query($link, "SELECT * FROM `playground_elements`");
 
 while ($row = mysqli_fetch_assoc($result)) {
@@ -74,6 +77,7 @@ while ($row = mysqli_fetch_assoc($result)) {
         'element_id' => $element_id
     ]);
 }
+
 
 output:
 
