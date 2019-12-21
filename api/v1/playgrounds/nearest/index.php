@@ -3,14 +3,23 @@
 header('Content-type: application/json');
 
 $ini = parse_ini_file('../../../../app.ini', true);
-
 $link = mysqli_connect($ini[database][host], $ini[database][user], $ini[database][password], $ini[database][name]) or die('Ошибка');
+
+$content = [];
+$successMessage = false;
+$resultField = 'error';
+$resultMessage = [];
+
+if (mysqli_connect_errno()) {
+    $resultMessage = 'Соединение с базой данных не удалось';
+    goto next;
+}
+
 mysqli_set_charset($link, 'utf8');
 
 $MAP_API_KEY = $ini[api][map_key];
 
 $content = [];
-$content_result = [];
 $latitudeFrom = '';
 $longitudeFrom = '';
 
@@ -119,7 +128,9 @@ while ($row = mysqli_fetch_assoc($result)) {
 
     $closest_district_id = $row['district_id'];
 
-    array_push($content_result, [
+    $successMessage = true;
+    $resultField = 'result';
+    array_push($resultMessage, [
         'id' => $closest_playground_id,
         'address' => $closest_address,
         'latitude' => $closest_latitude,
@@ -131,24 +142,24 @@ while ($row = mysqli_fetch_assoc($result)) {
         'elements' => $closest_elements,
         'distance' => $distance
     ]);
-
-    next:
 }
+
+next:
 
 function cmp_function($a, $b) {
     return ($a['distance'] > $b['distance']);
 }
 
-uasort($content_result, 'cmp_function');
+uasort($resultMessage, 'cmp_function');
 
-$content_result = array_slice($content_result, 0, 5);
+$resultMessage = array_slice($resultMessage, 0, 5);
 
 array_push($content, [
-    'success' => 'OK',
-    'result' => $content_result,
+    'success' => $successMessage,
+    $resultField => $resultMessage
 ]);
 
 if ($content) {
-    $json_str = json_encode($content, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_NUMERIC_CHECK);
+    $json_str = json_encode($content, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
     echo $json_str;
 }
