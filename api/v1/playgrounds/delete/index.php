@@ -58,7 +58,7 @@ if (isset($playground_id)) {
     }
 }
 
-next:
+output:
 
 array_push($content, [
     'success' => $successMessage,

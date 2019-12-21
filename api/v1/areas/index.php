@@ -12,7 +12,7 @@ $resultMessage = '';
 
 if (mysqli_connect_errno()) {
     $resultMessage = 'Соединение с базой данных не удалось';
-    goto next;
+    goto output;
 }
 
 mysqli_set_charset($link, 'utf8');
@@ -51,7 +51,7 @@ if ($area_id != '') {
     }
 }
 
-next:
+output:
 
 array_push($content, [
     'success' => $successMessage,

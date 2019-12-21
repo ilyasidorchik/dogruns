@@ -12,7 +12,7 @@ $resultMessage = [];
 
 if (mysqli_connect_errno()) {
     $resultMessage = 'Соединение с базой данных не удалось';
-    goto next;
+    goto output;
 }
 
 mysqli_set_charset($link, 'utf8');
@@ -142,9 +142,9 @@ while ($row = mysqli_fetch_assoc($result)) {
         'elements' => $closest_elements,
         'distance' => $distance
     ]);
-}
 
-next:
+    next:
+}
 
 function cmp_function($a, $b) {
     return ($a['distance'] > $b['distance']);
@@ -153,6 +153,8 @@ function cmp_function($a, $b) {
 uasort($resultMessage, 'cmp_function');
 
 $resultMessage = array_slice($resultMessage, 0, 5);
+
+output:
 
 array_push($content, [
     'success' => $successMessage,

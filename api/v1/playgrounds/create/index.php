@@ -39,12 +39,8 @@ if (isset($address) && isset($latitude) && isset($longitude) && isset($size) && 
         $playground_id = $row['id'];
 
         if (empty($playground_id)) {
-            if (!mysqli_query($link, "INSERT INTO `playgrounds` (`id`, `address`, `latitude`, `longitude`, `size`, `is_illuminated`, `is_fenced`, `district_id`)
-                                                           VALUES ('NULL', '$address', '$latitude', '$longitude', '$size', '$is_illuminated', '$is_fenced', '$district_id')")) {
-                $resultMessage = 'Соединение с базой данных не удалось';
-                goto next;
-            }
-
+            mysqli_query($link, "INSERT INTO `playgrounds` (`id`, `address`, `latitude`, `longitude`, `size`, `is_illuminated`, `is_fenced`, `district_id`)
+                                                           VALUES ('NULL', '$address', '$latitude', '$longitude', '$size', '$is_illuminated', '$is_fenced', '$district_id')");
             $result = mysqli_query($link, "SELECT `id` FROM `playgrounds` WHERE `address` = '$address'");
             $row = mysqli_fetch_assoc($result);
             $playground_id = $row['id'];
@@ -70,7 +66,7 @@ if (isset($address) && isset($latitude) && isset($longitude) && isset($size) && 
     }
 }
 
-next:
+output:
 
 array_push($content, [
     'success' => $successMessage,
