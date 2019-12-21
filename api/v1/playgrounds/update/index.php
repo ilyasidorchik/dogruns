@@ -1,11 +1,21 @@
 <?php
 
-$ini = parse_ini_file('../../../../app.ini', true);
+header('Content-type: application/json');
 
-$link = mysqli_connect($ini[database][host], $ini[database][user], $ini[database][password], $ini[database][name]) or die('Ошибка');
-mysqli_set_charset($link, 'utf8');
+$ini = parse_ini_file('../../../../app.ini', true);
+$link = mysqli_connect($ini[database][host], $ini[database][user], $ini[database][password], $ini[database][name]);
 
 $content = [];
+$successMessage = false;
+$resultField = 'error';
+$resultMessage = '';
+
+if (mysqli_connect_errno()) {
+    $resultMessage = 'Соединение с базой данных не удалось';
+    goto next;
+}
+
+mysqli_set_charset($link, 'utf8');
 
 $playground_id = htmlspecialchars($_GET['id']);
 $inputJSON = file_get_contents('php://input');
@@ -18,11 +28,12 @@ $new_is_illuminated = $input[0]['is_illuminated'];
 $new_is_fenced = $input[0]['is_fenced'];
 $new_district_id = $input[0]['district_id'];
 
+// Validation
+$new_address = str_replace("'", "", $new_address);
+
 $api_key = htmlspecialchars($_GET['API_KEY']);
 
 if (isset($playground_id)) {
-    header('Content-type: application/json');
-
     if ($api_key == $ini[api][key]) {
         $result = mysqli_query($link, "SELECT * FROM `playgrounds` WHERE `id` = '$playground_id'");
         $row = mysqli_fetch_assoc($result);
@@ -52,52 +63,49 @@ if (isset($playground_id)) {
                                                                      `district_id` = '$new_district_id'
                                                                  WHERE `id` = '$playground_id'");
 
-                array_push($content, [
-                    'success' => true,
+                $successMessage = true;
+                $resultField = 'result';
+                $resultMessage = [
                     'id' => $playground_id,
-                    'result' => [
-                        'old' => [
-                            'address' => $old_address,
-                            'latitude' => $old_latitude,
-                            'longitude' => $old_longitude,
-                            'size' => $old_size,
-                            'is_illuminated' => $old_is_illuminated,
-                            'is_fenced' => $old_is_fenced,
-                            'district_id' => $old_district_id
-                        ],
-                        'new' => [
-                            'address' => $new_address,
-                            'latitude' => $new_latitude,
-                            'longitude' => $new_longitude,
-                            'size' => $new_size,
-                            'is_illuminated' => $new_is_illuminated,
-                            'is_fenced' => $new_is_fenced,
-                            'district_id' => $new_district_id
-                        ]
+                    'old' => [
+                        'address' => $old_address,
+                        'latitude' => $old_latitude,
+                        'longitude' => $old_longitude,
+                        'size' => $old_size,
+                        'is_illuminated' => $old_is_illuminated,
+                        'is_fenced' => $old_is_fenced,
+                        'district_id' => $old_district_id
+                    ],
+                    'new' => [
+                        'address' => $new_address,
+                        'latitude' => $new_latitude,
+                        'longitude' => $new_longitude,
+                        'size' => $new_size,
+                        'is_illuminated' => $new_is_illuminated,
+                        'is_fenced' => $new_is_fenced,
+                        'district_id' => $new_district_id
                     ]
-                ]);
+                ];
             } else {
-                array_push($content, [
-                    'success' => false,
-                    'error' => "В таблице уже есть указанная информация"
-                ]);
+                $resultMessage = "В таблице уже есть указанная информация";
             }
         } else {
-            array_push($content, [
-                'success' => false,
-                'error' => "Отсутствует id, равный $playground_id"
-            ]);
+            $resultMessage = "Отсутствует id, равный $playground_id";
         }
     } else {
-        $errorMessage = ($api_key != '') ? 'Неверный ключ' : 'Не хватает ключа';
-        $errorMessage .= '. Обратитесь к администратору: ilya@sidorchik.ru';
-
-        array_push($content, [
-            'success' => false,
-            'error' => $errorMessage
-        ]);
+        $resultMessage = ($api_key != '') ? 'Неверный ключ' : 'Не хватает ключа';
+        $resultMessage .= '. Обратитесь к администратору: ilya@sidorchik.ru';
     }
+}
 
-    $json_str = json_encode($content, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_NUMERIC_CHECK);
+next:
+
+array_push($content, [
+    'success' => $successMessage,
+    $resultField => $resultMessage
+]);
+
+if ($content) {
+    $json_str = json_encode($content, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
     echo $json_str;
 }
