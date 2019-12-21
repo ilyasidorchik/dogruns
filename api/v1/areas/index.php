@@ -32,7 +32,7 @@ if ($area_id != '') {
             'name' => $name
         ];
     } else {
-        $resultMessage = "Не найден id = $area_id";
+        $resultMessage = "Не найден id, равный $area_id";
     }
 } else {
     $result = mysqli_query($link, "SELECT * FROM `areas`");
