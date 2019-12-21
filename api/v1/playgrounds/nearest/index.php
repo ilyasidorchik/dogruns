@@ -144,8 +144,8 @@ uasort($content_result, 'cmp_function');
 $content_result = array_slice($content_result, 0, 5);
 
 array_push($content, [
+    'success' => 'OK',
     'result' => $content_result,
-    'status' => 'OK'
 ]);
 
 if ($content) {

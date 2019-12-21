@@ -1,21 +1,32 @@
 <?php
 
-$ini = parse_ini_file('../../../../app.ini', true);
+header('Content-type: application/json');
 
-$link = mysqli_connect($ini[database][host], $ini[database][user], $ini[database][password], $ini[database][name]) or die('Ошибка');
-mysqli_set_charset($link, 'utf8');
+$ini = parse_ini_file('../../../../app.ini', true);
+$link = mysqli_connect($ini[database][host], $ini[database][user], $ini[database][password], $ini[database][name]);
 
 $content = [];
+$successMessage = false;
+$resultField = 'error';
+$resultMessage = '';
+
+if (mysqli_connect_errno()) {
+    $resultMessage = 'Соединение с базой данных не удалось';
+    goto next;
+}
+
+mysqli_set_charset($link, 'utf8');
 
 $inputJSON = file_get_contents('php://input');
 $input = json_decode($inputJSON, true);
 $name = $input[0]['name'];
 
+// Validation
+$name = str_replace("'", "", $name);
+
 $apiKey = htmlspecialchars($_GET['API_KEY']);
 
 if (isset($name)) {
-    header('Content-type: application/json');
-
     if ($apiKey == $ini[api][key]) {
         $result = mysqli_query($link, "SELECT `id` FROM `areas` WHERE `name` = '$name'");
         $row = mysqli_fetch_assoc($result);
@@ -28,29 +39,29 @@ if (isset($name)) {
             $row = mysqli_fetch_assoc($result);
             $area_id = $row['id'];
 
-            array_push($content, [
-                'success' => true,
-                'result' => [
+            $successMessage = true;
+            $resultField = 'result';
+            $resultMessage = [
                     'id' => $area_id,
-                    'name' => $name
-                ]
-            ]);
+                    'name' => (String)$name
+                ];
         } else {
-            array_push($content, [
-                'success' => false,
-                'error' => "Повторное добавление $name"
-            ]);
+            $resultMessage = "Повторное добавление $name";
         }
     } else {
-        $errorMessage = ($apiKey != '') ? 'Неверный ключ' : 'Не хватает ключа';
-        $errorMessage .= '. Обратитесь к администратору: ilya@sidorchik.ru';
-
-        array_push($content, [
-            'success' => false,
-            'error' => $errorMessage
-        ]);
+        $resultMessage = ($apiKey != '') ? 'Неверный ключ' : 'Не хватает ключа';
+        $resultMessage .= '. Обратитесь к администратору: ilya@sidorchik.ru';
     }
+}
 
-    $json_str = json_encode($content, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_NUMERIC_CHECK);
+next:
+
+array_push($content, [
+    'success' => $successMessage,
+    $resultField => $resultMessage
+]);
+
+if ($content) {
+    $json_str = json_encode($content, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
     echo $json_str;
 }
